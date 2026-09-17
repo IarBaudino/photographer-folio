@@ -23,6 +23,15 @@ function getDb() {
   return app ? getFirestore(app) : null;
 }
 
+function mergeNav(remote: SiteConfig["nav"] | undefined, fallback: SiteConfig["nav"]) {
+  const nav = remote?.length ? remote : fallback;
+  return nav.map((item) =>
+    item.id === "galeria" && item.label === "Work"
+      ? { ...item, label: "mi Trabajo" }
+      : item,
+  );
+}
+
 export function mergeSite(
   remote: Partial<SiteConfig> | undefined,
   fallback: SiteConfig = fallbackSite,
@@ -34,7 +43,7 @@ export function mergeSite(
     ...remote,
     photographer: { ...fallback.photographer, ...remote.photographer },
     seo: { ...fallback.seo, ...remote.seo },
-    nav: remote.nav?.length ? remote.nav : fallback.nav,
+    nav: mergeNav(remote.nav, fallback.nav),
     hero: {
       ...fallback.hero,
       ...remote.hero,

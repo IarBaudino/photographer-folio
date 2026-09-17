@@ -22,7 +22,7 @@ export const site: SiteConfig = {
       "Fotografía y dirección visual. Retratos, editorial y documental con base en Buenos Aires.",
   },
   nav: [
-    { id: "galeria", href: "#galeria", label: "Work" },
+    { id: "galeria", href: "#galeria", label: "mi Trabajo" },
     { id: "sobre-mi", href: "#sobre-mi", label: "Sobre mí" },
     { id: "contacto", href: "#contacto", label: "Contacto" },
   ],
