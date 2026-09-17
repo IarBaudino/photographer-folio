@@ -42,7 +42,7 @@ export function Header() {
       <div className="flex h-12 w-full items-center justify-between gap-3 px-margin-mobile md:h-14 md:px-margin-tablet lg:px-margin-desktop">
         <a
           href="#top"
-          className="font-label-sm text-[10px] tracking-[0.18em] text-primary uppercase transition-opacity hover:opacity-80 md:text-[11px]"
+          className="font-label-sm min-w-0 truncate text-[10px] tracking-[0.18em] text-primary uppercase transition-opacity hover:opacity-80 md:text-[11px]"
         >
           {site.photographer.name}
         </a>
@@ -65,7 +65,7 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-3 md:gap-6">
-          <div className="hidden items-center gap-2 sm:flex">
+          <div className="hidden items-center gap-2 lg:flex">
             {site.photographer.available ? (
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
             ) : null}

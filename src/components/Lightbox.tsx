@@ -42,7 +42,7 @@ export function Lightbox({ work, onClose }: LightboxProps) {
         type="button"
         aria-label="Cerrar vista ampliada"
         onClick={onClose}
-        className="absolute top-6 right-8 z-10 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-surface-container-high/40 text-2xl font-light text-primary transition-colors hover:text-outline"
+        className="absolute top-4 right-4 z-10 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-surface-container-high/40 text-xl font-light text-primary transition-colors hover:text-outline md:top-6 md:right-8 md:h-12 md:w-12 md:text-2xl"
       >
         ✕
       </button>

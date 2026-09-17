@@ -59,6 +59,10 @@ export function mergeSite(
     about: {
       ...fallback.about,
       ...remote.about,
+      bio: (remote.about?.bio ?? fallback.about.bio).replace(
+        /\s*—\s*y también la base de la plantilla que uso para otros portfolios\.?/gi,
+        "",
+      ),
       rows: remote.about?.rows ?? fallback.about.rows,
     },
     contact: {

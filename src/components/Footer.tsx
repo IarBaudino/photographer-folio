@@ -9,11 +9,11 @@ export function Footer() {
 
   return (
     <footer className="w-full bg-surface-container-lowest">
-      <div className="flex w-full flex-col items-center justify-between gap-6 px-margin-mobile py-editorial-gap-md md:flex-row md:px-margin-tablet lg:px-margin-desktop">
+      <div className="flex w-full flex-col items-center justify-between gap-6 px-margin-mobile py-10 text-center md:flex-row md:px-margin-tablet md:py-editorial-gap-md md:text-left lg:px-margin-desktop">
         <div className="font-label-sm text-label-sm tracking-widest text-outline uppercase">
           {site.photographer.name} © {year} — Archivo fotográfico
         </div>
-        <div className="flex items-center gap-editorial-gap-sm">
+        <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-3 md:justify-end md:gap-editorial-gap-sm">
           <a
             href={site.photographer.instagramUrl}
             target="_blank"

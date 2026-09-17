@@ -36,7 +36,7 @@ export function Contact() {
   return (
     <section
       id="contacto"
-      className="w-full bg-surface px-margin-mobile pt-editorial-gap-xl pb-editorial-gap-md md:px-margin-tablet lg:px-margin-desktop"
+      className="w-full bg-surface px-margin-mobile pt-16 pb-editorial-gap-md md:px-margin-tablet md:pt-editorial-gap-xl lg:px-margin-desktop"
     >
       <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-gutter-desktop">
         <div className="flex flex-col justify-between lg:col-span-5">
@@ -48,7 +48,7 @@ export function Contact() {
               {contact.subtitle}
             </p>
           </div>
-          <div className="flex flex-col gap-6 bg-surface-container-low p-8">
+          <div className="flex flex-col gap-6 bg-surface-container-low p-5 md:p-8">
             <div>
               <span className="font-label-sm text-label-sm mb-1 block tracking-widest text-outline uppercase">
                 Correo directo
@@ -137,7 +137,7 @@ export function Contact() {
                 className="field-input resize-none"
               />
             </Field>
-            <div className="flex items-center justify-between pt-4">
+            <div className="flex flex-col items-start gap-4 pt-2 sm:flex-row sm:items-center sm:justify-between sm:pt-4">
               <button
                 type="submit"
                 disabled={status === "sending"}

@@ -89,7 +89,7 @@ export const site: SiteConfig = {
   },
   about: {
     title: "Sobre mí",
-    bio: "Soy Iara Yael Baudino. Trabajo la fotografía como un espacio entre la luz, el silencio y los cuerpos que habitan una ciudad. Con base en Buenos Aires, armo retratos, piezas editoriales y series documentales con una mirada íntima y precisa. Este sitio es mi archivo vivo — y también la base de la plantilla que uso para otros portfolios.",
+    bio: "Soy Iara Yael Baudino. Trabajo la fotografía como un espacio entre la luz, el silencio y los cuerpos que habitan una ciudad. Con base en Buenos Aires, armo retratos, piezas editoriales y series documentales con una mirada íntima y precisa. Este sitio es mi archivo vivo.",
     portrait:
       "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1200&q=80",
     portraitAlt: "Retrato de Iara Yael Baudino",

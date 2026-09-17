@@ -8,13 +8,66 @@ import { Lightbox } from "./Lightbox";
 import { MaterialIcon } from "./MaterialIcon";
 import { SmartImage } from "./SmartImage";
 
+function ratioFromAspect(aspect: string) {
+  if (aspect.includes("square")) return 1;
+  const match = aspect.match(/aspect-\[(\d+)\/(\d+)\]/);
+  if (match) return Number(match[1]) / Number(match[2]);
+  return 3 / 2;
+}
+
+function packPages(
+  works: WorkItem[],
+  ratios: Record<string, number>,
+  maxWidth: number,
+  rowHeight: number,
+  gap: number,
+) {
+  const pages: WorkItem[][][] = [];
+  let rows: WorkItem[][] = [[], []];
+  let used = [0, 0];
+
+  function flush() {
+    const filled = rows.filter((row) => row.length);
+    if (filled.length) pages.push(filled);
+    rows = [[], []];
+    used = [0, 0];
+  }
+
+  function extra(rowIndex: number, width: number) {
+    return (rows[rowIndex].length ? gap : 0) + width;
+  }
+
+  for (const work of works) {
+    const width = Math.min(
+      (ratios[work.id] ?? ratioFromAspect(work.aspect)) * rowHeight,
+      maxWidth,
+    );
+    let target = used[0] <= used[1] ? 0 : 1;
+    if (used[target] + extra(target, width) > maxWidth + 1) {
+      target = target === 0 ? 1 : 0;
+    }
+    if (used[target] + extra(target, width) > maxWidth + 1) {
+      flush();
+      target = 0;
+    }
+    used[target] += extra(target, width);
+    rows[target].push(work);
+  }
+
+  flush();
+  return pages;
+}
+
 export function Gallery() {
   const { gallery } = useSite();
   const [filter, setFilter] = useState("all");
   const [selected, setSelected] = useState<WorkItem | null>(null);
-  const [canPrev, setCanPrev] = useState(false);
-  const [canNext, setCanNext] = useState(false);
-  const scrollerRef = useRef<HTMLDivElement>(null);
+  const [page, setPage] = useState(0);
+  const [visible, setVisible] = useState(true);
+  const [ratios, setRatios] = useState<Record<string, number>>({});
+  const [frame, setFrame] = useState({ width: 0, rowHeight: 0, gap: 8 });
+  const frameRef = useRef<HTMLDivElement>(null);
+  const touchX = useRef<number | null>(null);
 
   useEffect(() => {
     if (!gallery.categories.some((category) => category.id === filter)) {
@@ -30,55 +83,79 @@ export function Gallery() {
     [filter, gallery.works],
   );
 
-  const rows = useMemo(() => {
-    const mid = Math.ceil(works.length / 2);
-    return [works.slice(0, mid), works.slice(mid)].filter((row) => row.length);
-  }, [works]);
+  useEffect(() => {
+    const node = frameRef.current;
+    if (!node) return;
 
-  const updateArrows = useCallback(() => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    setCanPrev(el.scrollLeft > 8);
-    setCanNext(el.scrollLeft + el.clientWidth < el.scrollWidth - 8);
+    function measure() {
+      if (!frameRef.current) return;
+      const desktop = window.matchMedia("(min-width: 768px)").matches;
+      setFrame({
+        width: frameRef.current.clientWidth,
+        rowHeight: window.innerHeight * (desktop ? 0.56 : 0.36),
+        gap: desktop ? 8 : 6,
+      });
+    }
+
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(node);
+    window.addEventListener("resize", measure);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", measure);
+    };
   }, []);
 
-  useEffect(() => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    el.scrollTo({ left: 0 });
-    updateArrows();
-  }, [works, updateArrows]);
+  const pages = useMemo(() => {
+    if (!works.length || frame.width < 80) {
+      const mid = Math.ceil(works.length / 2);
+      return [[works.slice(0, mid), works.slice(mid)].filter((row) => row.length)];
+    }
+    return packPages(works, ratios, frame.width, frame.rowHeight, frame.gap);
+  }, [works, ratios, frame]);
+
+  const pageCount = Math.max(pages.length, 1);
+  const current = pages[Math.min(page, pageCount - 1)] ?? [];
 
   useEffect(() => {
-    const el = scrollerRef.current;
-    if (!el) return;
+    const upcoming = pages[page + 1];
+    if (!upcoming) return;
+    upcoming.flat().forEach((work) => {
+      const image = new window.Image();
+      image.decoding = "async";
+      image.src = work.src;
+    });
+  }, [page, pages]);
 
-    const onWheel = (event: WheelEvent) => {
-      if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
-      const goingRight = event.deltaY > 0;
-      const atStart = el.scrollLeft <= 8;
-      const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 8;
-      if ((goingRight && atEnd) || (!goingRight && atStart)) return;
-      event.preventDefault();
-      el.scrollLeft += event.deltaY;
-    };
+  useEffect(() => {
+    setPage(0);
+  }, [filter, works.length]);
 
-    el.addEventListener("scroll", updateArrows, { passive: true });
-    el.addEventListener("wheel", onWheel, { passive: false });
-    window.addEventListener("resize", updateArrows);
+  const goTo = useCallback(
+    (next: number) => {
+      const clamped = Math.max(0, Math.min(pageCount - 1, next));
+      if (clamped === page) return;
+      setVisible(false);
+      window.setTimeout(() => {
+        setPage(clamped);
+        setVisible(true);
+      }, 180);
+    },
+    [page, pageCount],
+  );
 
-    return () => {
-      el.removeEventListener("scroll", updateArrows);
-      el.removeEventListener("wheel", onWheel);
-      window.removeEventListener("resize", updateArrows);
-    };
-  }, [updateArrows, works.length]);
-
-  function scrollByPage(direction: -1 | 1) {
-    const el = scrollerRef.current;
-    if (!el) return;
-    el.scrollBy({ left: direction * el.clientWidth * 0.85, behavior: "smooth" });
-  }
+  useEffect(() => {
+    function onKey(event: KeyboardEvent) {
+      if (selected) return;
+      const tag = (event.target as HTMLElement | null)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      if (event.key === "ArrowLeft") goTo(page - 1);
+      if (event.key === "ArrowRight") goTo(page + 1);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [goTo, page, selected]);
 
   return (
     <section
@@ -89,14 +166,14 @@ export function Gallery() {
       <h2 id="galeria-heading" className="sr-only">
         Galería
       </h2>
-      <nav className="font-label-sm text-label-sm flex flex-wrap items-center gap-x-4 gap-y-2 px-margin-mobile pb-5 tracking-widest text-on-surface-variant uppercase md:gap-6 md:px-margin-tablet md:pb-7 lg:px-margin-desktop">
+      <nav className="font-label-sm text-label-sm flex flex-wrap items-center gap-x-3 gap-y-2 px-margin-mobile pb-5 tracking-widest text-on-surface-variant uppercase md:gap-6 md:px-margin-tablet md:pb-7 lg:px-margin-desktop">
         {gallery.categories.map((category) => (
           <button
             key={category.id}
             type="button"
             onClick={() => setFilter(category.id)}
             className={cn(
-              "cursor-pointer transition-all hover:text-primary",
+              "whitespace-nowrap cursor-pointer transition-all hover:text-primary",
               filter === category.id
                 ? "text-primary underline decoration-1 underline-offset-8"
                 : "text-outline",
@@ -107,59 +184,103 @@ export function Gallery() {
         ))}
       </nav>
 
-      <div className="relative">
-        {canPrev ? (
-          <button
-            type="button"
-            aria-label="Fotos anteriores"
-            onClick={() => scrollByPage(-1)}
-            className="absolute top-1/2 left-2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-surface/80 text-primary backdrop-blur-sm transition-opacity hover:bg-surface md:left-4 md:h-12 md:w-12"
-          >
-            <MaterialIcon name="chevron_left" className="text-[22px]" />
-          </button>
-        ) : null}
-        {canNext ? (
-          <button
-            type="button"
-            aria-label="Fotos siguientes"
-            onClick={() => scrollByPage(1)}
-            className="absolute top-1/2 right-2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-surface/80 text-primary backdrop-blur-sm transition-opacity hover:bg-surface md:right-4 md:h-12 md:w-12"
-          >
-            <MaterialIcon name="chevron_right" className="text-[22px]" />
-          </button>
-        ) : null}
-
+      <div
+        ref={frameRef}
+        className="overflow-hidden px-margin-mobile md:px-margin-tablet lg:px-margin-desktop"
+        onTouchStart={(event) => {
+          touchX.current = event.touches[0]?.clientX ?? null;
+        }}
+        onTouchEnd={(event) => {
+          if (touchX.current == null) return;
+          const delta = event.changedTouches[0].clientX - touchX.current;
+          touchX.current = null;
+          if (Math.abs(delta) < 48) return;
+          goTo(page + (delta < 0 ? 1 : -1));
+        }}
+      >
         <div
-          ref={scrollerRef}
-          className="overflow-x-auto px-margin-mobile pt-2 pb-2 md:px-margin-tablet lg:px-margin-desktop"
+          className={cn(
+            "flex min-h-[36vh] flex-col justify-center gap-1.5 transition-opacity duration-500 md:min-h-[56vh] md:gap-2",
+            visible ? "opacity-100" : "opacity-0",
+          )}
         >
-          <div className="flex w-max flex-col gap-1.5 md:gap-2">
-            {rows.map((row, rowIndex) => (
-              <div key={rowIndex} className="flex snap-x snap-mandatory gap-1.5 md:gap-2">
-                {row.map((work) => (
-                  <button
-                    key={work.id}
-                    type="button"
-                    onClick={() => setSelected(work)}
-                    className="group inline-flex h-[48vh] shrink-0 cursor-pointer items-stretch p-0 md:h-[56vh]"
-                  >
-                    <SmartImage
-                      src={work.src}
-                      alt={work.alt}
-                      fill={false}
-                      className={cn(
-                        "h-full w-auto max-w-none",
-                        "transition-all duration-700 ease-out group-hover:opacity-95",
-                        work.grayscale && "contrast-110 grayscale",
-                      )}
-                    />
-                  </button>
-                ))}
-              </div>
-            ))}
-          </div>
+          {current.map((row, rowIndex) => (
+            <div key={rowIndex} className="flex justify-center gap-1.5 md:gap-2">
+              {row.map((work) => (
+                <button
+                  key={work.id}
+                  type="button"
+                  onClick={() => setSelected(work)}
+                  className="group inline-flex h-[36vh] max-w-full shrink-0 cursor-pointer items-stretch p-0 md:h-[56vh]"
+                >
+                  <SmartImage
+                    src={work.src}
+                    alt={work.alt}
+                    fill={false}
+                    loading="eager"
+                    fetchPriority="high"
+                    className={cn(
+                      "h-full w-auto max-w-full",
+                      "transition-opacity duration-700 ease-out group-hover:opacity-95",
+                      work.grayscale && "contrast-110 grayscale",
+                    )}
+                    onLoad={(event) => {
+                      const image = event.currentTarget;
+                      if (!image.naturalHeight) return;
+                      const ratio = image.naturalWidth / image.naturalHeight;
+                      setRatios((current) =>
+                        current[work.id] === ratio
+                          ? current
+                          : { ...current, [work.id]: ratio },
+                      );
+                    }}
+                  />
+                </button>
+              ))}
+            </div>
+          ))}
         </div>
       </div>
+
+      {pageCount > 1 ? (
+        <div className="mt-8 flex items-center justify-center gap-6 px-margin-mobile md:mt-10 md:gap-8">
+          <button
+            type="button"
+            aria-label="Página anterior"
+            disabled={page === 0}
+            onClick={() => goTo(page - 1)}
+            className="flex h-8 w-8 items-center justify-center text-primary transition-opacity disabled:opacity-20"
+          >
+            <MaterialIcon name="chevron_left" className="text-[18px]" />
+          </button>
+          <div className="flex items-center gap-3">
+            {pages.map((_, index) => (
+              <button
+                key={index}
+                type="button"
+                aria-label={`Página ${index + 1}`}
+                aria-current={index === page ? "page" : undefined}
+                onClick={() => goTo(index)}
+                className={cn(
+                  "h-px cursor-pointer transition-all duration-500",
+                  index === page
+                    ? "w-8 bg-primary"
+                    : "w-3 bg-outline hover:bg-primary",
+                )}
+              />
+            ))}
+          </div>
+          <button
+            type="button"
+            aria-label="Página siguiente"
+            disabled={page >= pageCount - 1}
+            onClick={() => goTo(page + 1)}
+            className="flex h-8 w-8 items-center justify-center text-primary transition-opacity disabled:opacity-20"
+          >
+            <MaterialIcon name="chevron_right" className="text-[18px]" />
+          </button>
+        </div>
+      ) : null}
 
       <Lightbox work={selected} onClose={() => setSelected(null)} />
     </section>

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import type { SyntheticEvent } from "react";
 import { cn } from "@/lib/cn";
 
 const OPTIMIZED_HOSTS = new Set([
@@ -23,6 +24,9 @@ type SmartImageProps = {
   priority?: boolean;
   fill?: boolean;
   objectPosition?: string;
+  loading?: "lazy" | "eager";
+  fetchPriority?: "high" | "low" | "auto";
+  onLoad?: (event: SyntheticEvent<HTMLImageElement>) => void;
 };
 
 export function SmartImage({
@@ -33,14 +37,29 @@ export function SmartImage({
   priority,
   fill = true,
   objectPosition,
+  loading,
+  fetchPriority,
+  onLoad,
 }: SmartImageProps) {
   const shared = cn(fill && "object-cover", className);
   const style = objectPosition ? { objectPosition } : undefined;
+  const eager = priority || loading === "eager";
+  const nativeLoading = eager ? "eager" : (loading ?? "lazy");
+  const nativePriority = fetchPriority ?? (priority ? "high" : "auto");
 
   if (!fill) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
-      <img src={src} alt={alt} className={className} style={style} />
+      <img
+        src={src}
+        alt={alt}
+        className={className}
+        style={style}
+        loading={nativeLoading}
+        decoding="async"
+        fetchPriority={nativePriority}
+        onLoad={onLoad}
+      />
     );
   }
 
@@ -54,6 +73,7 @@ export function SmartImage({
         priority={priority}
         className={shared}
         style={style}
+        onLoad={onLoad}
       />
     );
   }
@@ -66,6 +86,10 @@ export function SmartImage({
       alt={alt}
       className={cn(fill && "absolute inset-0 h-full w-full object-cover", shared)}
       style={style}
+      loading={nativeLoading}
+      decoding="async"
+      fetchPriority={nativePriority}
+      onLoad={onLoad}
     />
   );
 }
