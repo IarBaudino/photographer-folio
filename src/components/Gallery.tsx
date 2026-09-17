@@ -205,13 +205,13 @@ export function Gallery() {
           )}
         >
           {current.map((row, rowIndex) => (
-            <div key={rowIndex} className="flex justify-center gap-1.5 md:gap-2">
+            <div key={rowIndex} className="flex items-center justify-center gap-1.5 md:gap-2">
               {row.map((work) => (
                 <button
                   key={work.id}
                   type="button"
                   onClick={() => setSelected(work)}
-                  className="group inline-flex h-[36vh] max-w-full shrink-0 cursor-pointer items-stretch p-0 md:h-[56vh]"
+                  className="group inline-flex max-h-[36vh] max-w-full cursor-pointer items-center p-0 md:max-h-[56vh]"
                 >
                   <SmartImage
                     src={work.src}
@@ -220,7 +220,7 @@ export function Gallery() {
                     loading="eager"
                     fetchPriority="high"
                     className={cn(
-                      "h-full w-auto max-w-full",
+                      "h-auto max-h-[36vh] w-auto max-w-full object-contain md:max-h-[56vh]",
                       "transition-opacity duration-700 ease-out group-hover:opacity-95",
                       work.grayscale && "contrast-110 grayscale",
                     )}
