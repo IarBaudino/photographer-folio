@@ -30,6 +30,7 @@ export type NavItem = {
 export type SiteConfig = {
   photographer: {
     name: string;
+    shortName: string;
     role: string;
     location: string;
     available: boolean;

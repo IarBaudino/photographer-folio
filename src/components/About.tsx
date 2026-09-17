@@ -3,6 +3,7 @@
 import { useSite } from "@/content/site-context";
 import { cn } from "@/lib/cn";
 import { SmartImage } from "./SmartImage";
+import { SectionFade } from "./SectionFade";
 
 export function About() {
   const { about } = useSite();
@@ -10,9 +11,11 @@ export function About() {
   return (
     <section
       id="sobre-mi"
-      className="w-full bg-surface-container-lowest pt-0 pb-16 md:pb-24 lg:px-margin-desktop lg:py-editorial-gap-xl"
+      className="relative w-full bg-surface pt-0 pb-16 md:pb-24 lg:px-margin-desktop lg:py-editorial-gap-xl"
     >
-      <div className="grid grid-cols-1 lg:grid-cols-12 lg:items-center lg:gap-12 lg:gap-gutter-desktop">
+      <SectionFade edge="top" />
+      <SectionFade edge="bottom" />
+      <div className="relative z-0 grid grid-cols-1 lg:grid-cols-12 lg:items-center lg:gap-12 lg:gap-gutter-desktop">
         <div className="relative lg:col-span-5">
           <div className="relative aspect-[3/4] w-full overflow-hidden bg-surface-container sm:aspect-[4/5] lg:aspect-[3/4]">
             <SmartImage
@@ -21,7 +24,7 @@ export function About() {
               sizes="(max-width: 1024px) 100vw, 40vw"
               className="object-cover contrast-110 grayscale"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-surface-container-lowest from-15% via-surface-container-lowest/55 via-45% to-transparent lg:from-surface-container-lowest/40 lg:via-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-surface from-15% via-surface/55 via-45% to-transparent lg:from-surface/40 lg:via-transparent" />
           </div>
         </div>
 

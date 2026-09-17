@@ -2,13 +2,15 @@
 
 import Link from "next/link";
 import { useSite } from "@/content/site-context";
+import { SectionFade } from "./SectionFade";
 
 export function Footer() {
   const site = useSite();
   const year = new Date().getFullYear();
 
   return (
-    <footer className="w-full bg-surface-container-lowest">
+    <footer className="relative w-full bg-surface">
+      <SectionFade edge="top" />
       <div className="flex w-full flex-col items-center justify-between gap-6 px-margin-mobile py-10 text-center md:flex-row md:px-margin-tablet md:py-editorial-gap-md md:text-left lg:px-margin-desktop">
         <div className="font-label-sm text-label-sm tracking-widest text-outline uppercase">
           {site.photographer.name} © {year} — Archivo fotográfico

@@ -8,6 +8,7 @@ import type { SiteConfig } from "./types";
 export const site: SiteConfig = {
   photographer: {
     name: "Iara Yael Baudino",
+    shortName: "YIB PH",
     role: "Fotografía",
     location: "Buenos Aires",
     available: true,

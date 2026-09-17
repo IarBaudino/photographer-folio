@@ -6,6 +6,7 @@ import type { WorkItem } from "@/content/types";
 import { cn } from "@/lib/cn";
 import { Lightbox } from "./Lightbox";
 import { MaterialIcon } from "./MaterialIcon";
+import { SectionFade } from "./SectionFade";
 import { SmartImage } from "./SmartImage";
 
 function ratioFromAspect(aspect: string) {
@@ -161,12 +162,12 @@ export function Gallery() {
     <section
       id="galeria"
       aria-labelledby="galeria-heading"
-      className="w-full bg-surface py-10 md:py-14"
+      className="relative w-full bg-surface py-10 md:py-14"
     >
       <h2 id="galeria-heading" className="sr-only">
         Galería
       </h2>
-      <nav className="font-label-sm text-label-sm flex flex-wrap items-center gap-x-3 gap-y-2 px-margin-mobile pb-5 tracking-widest text-on-surface-variant uppercase md:gap-6 md:px-margin-tablet md:pb-7 lg:px-margin-desktop">
+      <nav className="font-label-sm text-label-sm flex flex-wrap items-center justify-center gap-x-3 gap-y-2 px-margin-mobile pb-5 tracking-widest text-on-surface-variant uppercase md:gap-6 md:px-margin-tablet md:pb-7 lg:px-margin-desktop">
         {gallery.categories.map((category) => (
           <button
             key={category.id}
@@ -186,7 +187,7 @@ export function Gallery() {
 
       <div
         ref={frameRef}
-        className="overflow-hidden px-margin-mobile md:px-margin-tablet lg:px-margin-desktop"
+        className="relative z-0 overflow-hidden px-margin-mobile md:px-margin-tablet lg:px-margin-desktop"
         onTouchStart={(event) => {
           touchX.current = event.touches[0]?.clientX ?? null;
         }}
@@ -198,6 +199,8 @@ export function Gallery() {
           goTo(page + (delta < 0 ? 1 : -1));
         }}
       >
+        <SectionFade edge="top" />
+        <SectionFade edge="bottom" />
         <div
           className={cn(
             "flex min-h-[36vh] flex-col justify-center gap-1.5 transition-opacity duration-500 md:min-h-[56vh] md:gap-2",

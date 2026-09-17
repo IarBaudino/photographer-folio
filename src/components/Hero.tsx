@@ -2,6 +2,7 @@
 
 import { useSite } from "@/content/site-context";
 import { SmartImage } from "./SmartImage";
+import { SectionFade } from "./SectionFade";
 
 export function Hero() {
   const { hero, photographer } = useSite();
@@ -19,8 +20,9 @@ export function Hero() {
           objectPosition={`${focusX}% ${focusY}%`}
           className="scale-105 opacity-40 contrast-125 transition-transform duration-1000 ease-out"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/50 to-surface/20" />
+        <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/70 to-surface/25" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent,rgb(19_19_19/0.2),#131313)]" />
+        <SectionFade edge="bottom" />
       </div>
 
       <h1 className="font-headline-md relative z-10 text-[28px] leading-tight tracking-[0.01em] text-primary md:text-[40px] lg:text-[44px]">

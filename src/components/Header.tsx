@@ -44,7 +44,7 @@ export function Header() {
           href="#top"
           className="font-label-sm min-w-0 truncate text-[10px] tracking-[0.18em] text-primary uppercase transition-opacity hover:opacity-80 md:text-[11px]"
         >
-          {site.photographer.name}
+          {site.photographer.shortName || "YIB PH"}
         </a>
 
         <nav className="hidden items-center gap-editorial-gap-sm md:flex">

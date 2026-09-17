@@ -30,6 +30,19 @@ export function IdentitySection({
           }
         />
       </AdminField>
+      <AdminField label="Marca en la barra (navbar)" htmlFor="short-name">
+        <input
+          id="short-name"
+          className="field-input"
+          value={draft.photographer.shortName ?? ""}
+          onChange={(event) =>
+            setDraft({
+              ...draft,
+              photographer: { ...draft.photographer, shortName: event.target.value },
+            })
+          }
+        />
+      </AdminField>
       <AdminField label="Rol / disciplina" htmlFor="role">
         <input
           id="role"

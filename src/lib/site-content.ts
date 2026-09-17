@@ -41,7 +41,12 @@ export function mergeSite(
   return {
     ...fallback,
     ...remote,
-    photographer: { ...fallback.photographer, ...remote.photographer },
+    photographer: {
+      ...fallback.photographer,
+      ...remote.photographer,
+      shortName:
+        remote.photographer?.shortName?.trim() || fallback.photographer.shortName,
+    },
     seo: { ...fallback.seo, ...remote.seo },
     nav: mergeNav(remote.nav, fallback.nav),
     hero: {
